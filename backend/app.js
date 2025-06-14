@@ -4,13 +4,18 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const axios = require('axios');
 
-// Configuração da conexão com o PostgreSQL
+/ Conexão com PostgreSQL do Railway
 const pool = new Pool({
-  user: 'postgres',          // ✅ Substitua pelo seu usuário do PostgreSQL
-  host: 'localhost',          // ✅ Endereço do banco
-  database: 'cotacao_db',     // ✅ Nome do seu banco de dados
-  password: 'Al171178@',      // ✅ Sua senha do PostgreSQL
-  port: 5432,                 // ✅ Porta padrão do PostgreSQL
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Rodar servidor com porta dinâmica
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Servidor Backend rodando na porta ${PORT}`);
 });
 
 const app = express();
