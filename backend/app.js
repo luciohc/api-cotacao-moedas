@@ -4,33 +4,33 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const axios = require('axios');
 
-// Conexão com PostgreSQL do Railway
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Conexão com PostgreSQL do Railway
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+// ✅ Health Check - Rota inicial
+app.get('/', (req, res) => {
+  res.send('API Cotação de Moedas rodando no Railway!');
+});
+
 // 👉 Cotação Dólar/Real usando Open Exchange Rates
 app.get('/api/cotacoes/external/openex', async (req, res) => {
   try {
-    const appId = 'bd736959f2914194917c4285e7558a4d';  // <-- Coloque sua API KEY aqui
+    const appId = 'bd736959f2914194917c4285e7558a4d';
     const response = await axios.get(`https://openexchangerates.org/api/latest.json?app_id=${appId}&symbols=BRL,EUR`);
     const rates = response.data.rates;
-    
+
     const cotacoes = [
       { moeda: 'DÓLAR', valor: rates.BRL },
       { moeda: 'EURO', valor: rates.EUR }
     ];
-    
-    // Grava no banco cada uma
+
     for (const c of cotacoes) {
       await pool.query('INSERT INTO cotacoes (moeda, valor) VALUES ($1, $2)', [c.moeda, c.valor]);
     }
@@ -41,7 +41,7 @@ app.get('/api/cotacoes/external/openex', async (req, res) => {
   }
 });
 
-// 👉 Cotação do Banco Central - Dólar e Euro
+// 👉 Cotação do Banco Central
 app.get('/api/cotacoes/external/bcb', async (req, res) => {
   try {
     const endpoints = [
@@ -56,7 +56,6 @@ app.get('/api/cotacoes/external/bcb', async (req, res) => {
       const valor = parseFloat(response.data[0].valor.replace(',', '.'));
       cotacoes.push({ moeda: endpoint.moeda, valor: valor });
 
-      // Salvar no banco
       await pool.query('INSERT INTO cotacoes (moeda, valor) VALUES ($1, $2)', [endpoint.moeda, valor]);
     }
 
@@ -66,10 +65,10 @@ app.get('/api/cotacoes/external/bcb', async (req, res) => {
   }
 });
 
-// Endpoint para buscar cotação real do dólar (USD → BRL)
+// 👉 Consulta Dólar Real-time
 app.get('/api/cotacoes/external', async (req, res) => {
   try {
-    const appId = 'bd736959f2914194917c4285e7558a4d'; // Substitua pela sua chave
+    const appId = 'bd736959f2914194917c4285e7558a4d';
     const response = await axios.get(`https://openexchangerates.org/api/latest.json?app_id=${appId}&symbols=BRL`);
     const valorDolarParaReal = response.data.rates.BRL;
     res.json({ moeda: 'DÓLAR', valor: valorDolarParaReal });
@@ -78,7 +77,7 @@ app.get('/api/cotacoes/external', async (req, res) => {
   }
 });
 
-// 👉 CREATE - Cadastrar nova cotação
+// 👉 CRUD - CREATE
 app.post('/api/cotacoes', async (req, res) => {
   const { moeda, valor } = req.body;
   try {
@@ -92,7 +91,7 @@ app.post('/api/cotacoes', async (req, res) => {
   }
 });
 
-// 👉 READ - Listar todas as cotações
+// 👉 CRUD - READ
 app.get('/api/cotacoes', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM cotacoes ORDER BY id DESC');
@@ -102,22 +101,19 @@ app.get('/api/cotacoes', async (req, res) => {
   }
 });
 
-// 👉 UPDATE - Atualizar uma cotação
+// 👉 CRUD - UPDATE
 app.put('/api/cotacoes/:id', async (req, res) => {
   const { id } = req.params;
   const { moeda, valor } = req.body;
   try {
-    await pool.query(
-      'UPDATE cotacoes SET moeda = $1, valor = $2 WHERE id = $3',
-      [moeda, valor, id]
-    );
+    await pool.query('UPDATE cotacoes SET moeda = $1, valor = $2 WHERE id = $3', [moeda, valor, id]);
     res.json({ message: 'Cotação atualizada com sucesso.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// 👉 DELETE - Excluir uma cotação
+// 👉 CRUD - DELETE
 app.delete('/api/cotacoes/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -128,10 +124,8 @@ app.delete('/api/cotacoes/:id', async (req, res) => {
   }
 });
 
-// Rodar servidor com porta dinâmica
+// ✅ Rodar o servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Servidor Backend rodando na porta ${PORT}`);
 });
-
-
