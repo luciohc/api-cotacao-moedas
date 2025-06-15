@@ -4,7 +4,7 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const axios = require('axios');
 
-/ Conexão com PostgreSQL do Railway
+// Conexão com PostgreSQL do Railway
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -12,11 +12,7 @@ const pool = new Pool({
   }
 });
 
-// Rodar servidor com porta dinâmica
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Servidor Backend rodando na porta ${PORT}`);
-});
+
 
 const app = express();
 app.use(cors());
@@ -132,8 +128,10 @@ app.delete('/api/cotacoes/:id', async (req, res) => {
   }
 });
 
-// 👉 Rodar o servidor
-const PORT = 5000;
+// Rodar servidor com porta dinâmica
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Servidor Backend rodando na porta ${PORT}`);
 });
+
+
