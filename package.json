@@ -1,0 +1,18 @@
+{
+  "name": "api-cotacao-moedas",
+  "version": "1.0.0",
+  "description": "API de cotação de moedas com Node.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.7",
+    "dotenv": "^16.0.3",
+    "cors": "^2.8.5"
+  }
+}
