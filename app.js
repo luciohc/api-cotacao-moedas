@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 });
 
 // 👉 Cotação Dólar/Real usando Open Exchange Rates
-app.get('/api/cotacoes/external/openex', async (req, res) => {
+app.get(' ', async (req, res) => {
   try {
     const appId = 'bd736959f2914194917c4285e7558a4d';
     const response = await axios.get(`https://openexchangerates.org/api/latest.json?app_id=${appId}&symbols=BRL,EUR`);
