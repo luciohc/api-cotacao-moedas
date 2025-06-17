@@ -125,6 +125,24 @@ app.delete('/api/cotacoes/:id', async (req, res) => {
   }
 });
 
+app.get('/api/cotacoes/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query('SELECT * FROM cotacoes WHERE id = $1', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Cotação não encontrada' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Erro ao buscar cotação:', error);
+    res.status(500).json({ error: 'Erro ao buscar cotação' });
+  }
+});
+
+
 // ✅ Rodar o servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
